@@ -1,0 +1,12 @@
+{
+    "latex-workshop.recipes": [
+        {
+            "name": "pdflatex",
+            "tools": [
+                "pdflatex"
+            ]
+        }
+    ],
+    "latex-workshop.recipe.default": "pdflatex"
+
+}
