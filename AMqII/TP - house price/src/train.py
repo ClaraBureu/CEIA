@@ -17,6 +17,8 @@ from sklearn.metrics import mean_squared_error
 from utils import load_and_split_data
 from utils import train_regressor
 import pickle
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class ModelTrainingPipeline(object):
@@ -42,11 +44,12 @@ class ModelTrainingPipeline(object):
         COMPLETAR DOCSTRING
         
         """
+        train_df = df
         # Load and split the data
         target_variable = 'SalePrice'
 
         X_train, X_val, y_train, y_val = load_and_split_data(
-            df, target_variable)
+            train_df, target_variable)
 
         # Define hyperparameter grids for each model
         model_params = {
@@ -65,22 +68,55 @@ class ModelTrainingPipeline(object):
         best_models = {}
 
         for model, params in model_params.items():
-            model_trained = train_regressor(model, X_train, y_train, params)
+            best_model = train_regressor(model, X_train, y_train, params)
 
             # Calculate RMSE for the training set
-            y_train_pred = model_trained.predict(X_train)
-            rmse_train = mean_squared_error(
-                y_train, y_train_pred, squared=False)
+            y_train_pred = best_model.predict(X_train)
+            rmse_train = mean_squared_error(y_train, y_train_pred, squared=False)
 
             # Calculate RMSE for the validation set
-            y_val_pred = model_trained.predict(X_val)
+            y_val_pred = best_model.predict(X_val)
             rmse_val = mean_squared_error(y_val, y_val_pred, squared=False)
 
             # Store the best model and RMSE scores in the dictionary
             best_models[model.__class__.__name__] = (
-                model_trained, y_val_pred, rmse_val, y_train_pred, rmse_train)
+                best_model, y_val_pred, rmse_val, y_train_pred, rmse_train)
         
-        return model_trained
+        X_train_final = train_df.drop(columns=target_variable)
+        y_train_final = train_df[target_variable]
+        
+        best_model = best_models["GradientBoostingRegressor"][0]
+        best_model.fit(X=X_train_final, y=y_train_final)
+        y_train_final_pred = best_model.predict(X=X_train_final)
+
+        # Calculate RMSE for the training set
+        rmse_train = mean_squared_error(
+            y_train_final, y_train_final_pred, squared=False)
+
+        # Create a bar plot
+        model_names = ['Training RMSE']
+        rmse_scores = [rmse_train]
+
+        # Create a bar plot using Seaborn
+        plt.figure(figsize=(8, 5))
+        sns.set(style="whitegrid")
+
+        # Create the bar plot
+        ax = sns.barplot(x=model_names, y=rmse_scores, palette="Blues")
+
+        plt.xlabel('RMSE Type')
+        plt.ylabel('RMSE Score')
+        plt.title('RMSE Comparison for Training and Test Sets')
+        plt.xticks(rotation=0)  # Keep x-axis labels horizontal
+
+        # Add RMSE values as labels in each column
+        for i, v in enumerate(rmse_scores):
+            ax.text(i, v, f'RMSE: {v:.2f}', ha='center', va='bottom', fontsize=10)
+
+        # Show the plot
+        plt.show()
+        
+        return best_model
 
     def model_dump(self, model_trained) -> None:
         """
@@ -105,4 +141,4 @@ class ModelTrainingPipeline(object):
 if __name__ == "__main__":
 
     ModelTrainingPipeline(input_path='..\\data\\transformed_dataframe.csv',
-                          model_path='..\\data\\model.plk').run()
+                          model_path='..\\data\\model.pkl').run()

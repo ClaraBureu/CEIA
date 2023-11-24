@@ -1,12 +1,10 @@
 import pandas as pd
-pd.set_option('display.max_columns', None)
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import scipy.stats as stats
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.base import BaseEstimator, TransformerMixin
-import numpy as np
 
 
 def calculate_outlier_percentage(data, threshold=1.5):
@@ -17,7 +15,8 @@ def calculate_outlier_percentage(data, threshold=1.5):
         # Extract the column data as a NumPy array
         column_data = data[column].values
 
-        # Calculate the IQR and the lower and upper bounds for potential outliers
+        # Calculate the IQR and the lower and
+        # upper bounds for potential outliers
         Q1 = np.percentile(column_data, 25)
         Q3 = np.percentile(column_data, 75)
         IQR = Q3 - Q1
@@ -43,6 +42,7 @@ def calculate_outlier_percentage(data, threshold=1.5):
                                       ascending=False)
     return result_df
 
+
 def calculate_null_percentage(data):
 
     # Calculate the percentage of null values for each column
@@ -57,6 +57,7 @@ def calculate_null_percentage(data):
         by='Null Percentage [%]', ascending=False)
 
     return result_df
+
 
 def outlier_diagnostic_plots(df, variable):
    
@@ -108,14 +109,16 @@ def load_and_split_data(data_frame, target_col):
     y = data_frame[target_col]
 
     # Split the data into a training and validation set
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=0.2, random_state=42)
 
     return X_train, X_val, y_train, y_val
 
 
 def train_regressor(model, X_train, y_train, param_grid):
 
-    grid_search = GridSearchCV(model, param_grid, cv=5, scoring='neg_mean_squared_error')
+    grid_search = GridSearchCV(
+        model, param_grid, cv=5, scoring='neg_mean_squared_error')
     grid_search.fit(X_train, y_train)
     best_model = grid_search.best_estimator_
     
@@ -124,12 +127,14 @@ def train_regressor(model, X_train, y_train, param_grid):
 
 class CappingTransformer(BaseEstimator, TransformerMixin):
     """
-    A custom transformer for capping (winsorizing) numerical data using the Interquartile Range (IQR) and a threshold.
+    A custom transformer for capping (winsorizing) numerical data using
+    the Interquartile Range (IQR) and a threshold.
 
     Parameters:
     -----------
     threshold : float, optional (default=1.5)
-        The threshold multiplier for the IQR. Determines how far beyond the IQR the limits should extend.
+        The threshold multiplier for the IQR. Determines how far beyond
+        the IQR the limits should extend.
 
     Attributes:
     -----------
@@ -141,10 +146,12 @@ class CappingTransformer(BaseEstimator, TransformerMixin):
     Methods:
     --------
     fit(X, y=None):
-        Calculate the lower and upper limits based on the data distribution during training.
+        Calculate the lower and upper limits based on
+        the data distribution during training.
 
     transform(X, y=None):
-        Apply capping to the input data using the precomputed lower and upper limits.
+        Apply capping to the input data using the
+        precomputed lower and upper limits.
 
     Example Usage:
     -------------
@@ -165,7 +172,8 @@ class CappingTransformer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         """
-        Fit the capping transformer to the input data and calculate lower and upper limits.
+        Fit the capping transformer to the input data and calculate
+        lower and upper limits.
 
         Parameters:
         -----------
@@ -210,11 +218,13 @@ class CappingTransformer(BaseEstimator, TransformerMixin):
 
     def get_feature_names_out(self, input_features=None):
         """
-        Get feature names for transformed data. In this case, the names are preserved.
+        Get feature names for transformed data. In this case,
+        the names are preserved.
 
         Parameters:
         -----------
-        input_features : array-like, shape (n_features,), optional (default=None)
+        input_features : array-like, shape (n_features,),
+        optional (default=None)
             Names of the input features.
 
         Returns:

@@ -19,6 +19,7 @@ from utils import CappingTransformer
 from utils import calculate_null_percentage
 from utils import calculate_outlier_percentage
 from utils import feature_target_correlation_df
+from sklearn.model_selection import train_test_split
 
 
 class FeatureEngineeringPipeline(object):
@@ -44,6 +45,10 @@ class FeatureEngineeringPipeline(object):
         Transform the input data into the desired output data.
         """
         # Defining numeric and categorical features of the dataset
+        train_df, test_df = train_test_split(df, test_size=0.2, random_state=42) # Saving a part of the dataset as test
+
+        df = train_df
+
         numeric_features = df.select_dtypes(include=['int64', 'float64']).columns  # noqa E501
         categorical_features = df.select_dtypes(include=['object']).columns
 
@@ -142,7 +147,13 @@ class FeatureEngineeringPipeline(object):
         df_transformed = final_data_df.rename(
             columns=lambda x: x.replace('numeric__', '').replace('categoric__', '').replace('remainder__', ''))  # noqa E501
 
-        return df_transformed
+        test_final_data = full_pipeline.transform(X=test_df[final_features])
+        test_final_data_df = pd.DataFrame(test_final_data, columns=full_pipeline.get_feature_names_out())  # noqa E501
+        test_final_data_df = test_final_data_df.rename(columns=lambda x: x.replace('numeric__', '').replace('categoric__', '').replace('remainder__', ''))  # noqa E501
+
+        test_df_transformed = test_final_data_df
+
+        return df_transformed, test_df_transformed
 
     def write_prepared_data(self, transformed_dataframe):
         """
@@ -153,7 +164,7 @@ class FeatureEngineeringPipeline(object):
 
     def run(self):
         df = self.read_data()
-        df_transformed = self.data_transformation(df)
+        df_transformed, test_df_transformed = self.data_transformation(df)
         self.write_prepared_data(df_transformed)
 
 
