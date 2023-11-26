@@ -23,8 +23,9 @@ import seaborn as sns
 
 class ModelTrainingPipeline(object):
 
-    def __init__(self, input_path, model_path):
+    def __init__(self, input_path, model_path, input_test=None):
         self.input_path = input_path
+        self.input_test = input_test
         self.model_path = model_path
 
     def read_data(self) -> pd.DataFrame:
@@ -37,14 +38,16 @@ class ModelTrainingPipeline(object):
         the CSV file.
         """
         pandas_df = pd.read_csv(self.input_path)
-        return pandas_df
+        test_df = pd.read_csv(self.input_test)
+        return pandas_df, test_df
 
-    def model_training(self, df: pd.DataFrame):
+    def model_training(self, df: pd.DataFrame, test_df: pd.DataFrame):
         """
         COMPLETAR DOCSTRING
         
         """
         train_df = df
+        test_df = test_df
         # Load and split the data
         target_variable = 'SalePrice'
 
@@ -84,18 +87,23 @@ class ModelTrainingPipeline(object):
         
         X_train_final = train_df.drop(columns=target_variable)
         y_train_final = train_df[target_variable]
+        X_test = test_df.drop(columns=target_variable)
+        y_test = test_df[target_variable]
         
         best_model = best_models["GradientBoostingRegressor"][0]
         best_model.fit(X=X_train_final, y=y_train_final)
         y_train_final_pred = best_model.predict(X=X_train_final)
+        y_test_pred = best_model.predict(X=X_test)
 
         # Calculate RMSE for the training set
-        rmse_train = mean_squared_error(
-            y_train_final, y_train_final_pred, squared=False)
+        rmse_train = mean_squared_error(y_train_final, y_train_final_pred, squared=False)
+
+        # Calculate RMSE for the test set
+        rmse_test = mean_squared_error(y_test, y_test_pred, squared=False)
 
         # Create a bar plot
-        model_names = ['Training RMSE']
-        rmse_scores = [rmse_train]
+        model_names = ['Training RMSE', 'Test RMSE']
+        rmse_scores = [rmse_train, rmse_test]
 
         # Create a bar plot using Seaborn
         plt.figure(figsize=(8, 5))
@@ -133,12 +141,13 @@ class ModelTrainingPipeline(object):
     
     def run(self):
     
-        df = self.read_data()
-        model_trained = self.model_training(df)
+        df, test_df = self.read_data()
+        model_trained = self.model_training(df, test_df)
         self.model_dump(model_trained)
 
 
 if __name__ == "__main__":
 
     ModelTrainingPipeline(input_path='..\\data\\transformed_dataframe.csv',
+                          input_test='..\\data\\test_df_transformed.csv',
                           model_path='..\\data\\model.pkl').run()

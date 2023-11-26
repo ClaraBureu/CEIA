@@ -24,9 +24,10 @@ from sklearn.model_selection import train_test_split
 
 class FeatureEngineeringPipeline(object):
 
-    def __init__(self, input_path, output_path):
+    def __init__(self, input_path, output_path, output_test):
         self.input_path = input_path
         self.output_path = output_path
+        self.output_test = output_test
 
     def read_data(self):
         """
@@ -155,19 +156,21 @@ class FeatureEngineeringPipeline(object):
 
         return df_transformed, test_df_transformed
 
-    def write_prepared_data(self, transformed_dataframe):
+    def write_prepared_data(self, transformed_dataframe, test_df_transformed):
         """
         Write the prepared data to CSV.
         """
         transformed_dataframe.to_csv(self.output_path, index=False)
+        test_df_transformed.to_csv(self.output_test, index=False)
         return transformed_dataframe  # Return the transformed dataframe
 
     def run(self):
         df = self.read_data()
         df_transformed, test_df_transformed = self.data_transformation(df)
-        self.write_prepared_data(df_transformed)
+        self.write_prepared_data(df_transformed, test_df_transformed)
 
 
 if __name__ == "__main__":
     FeatureEngineeringPipeline(input_path='..\\data\\train.csv',
-                               output_path='..\\data\\transformed_dataframe.csv').run()  # noqa: E501
+                               output_path='..\\data\\transformed_dataframe.csv',
+                               output_test='..\\data\\test_df_transformed.csv').run()  # noqa: E501
