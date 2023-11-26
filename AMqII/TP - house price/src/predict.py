@@ -41,7 +41,7 @@ class MakePredictionPipeline(object):
 
         return None
 
-    def make_predictions(self, data):
+    def make_predictions(self, data, model=None):
         """
         Realizar las predicciones sobre el dataset de entrada.
         """
@@ -63,9 +63,11 @@ class MakePredictionPipeline(object):
     def run(self):
 
         data = self.load_data()
-        self.load_model()
-        df_preds = self.make_predictions(data)
-        self.write_predictions(df_preds)
+        data_for_prediction = data.drop(columns=['SalePrice'])
+        model = self.load_model()
+        predictions = self.make_predictions(data_for_prediction, model)
+
+        self.write_predictions(predictions)
 
 
 if __name__ == "__main__":
