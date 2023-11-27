@@ -63,9 +63,9 @@ class MakePredictionPipeline(object):
     def run(self):
 
         data = self.load_data()
-        data_for_prediction = data.drop(columns=['SalePrice'])
+        #data_for_prediction = data.drop(columns=['SalePrice'])
         model = self.load_model()
-        predictions = self.make_predictions(data_for_prediction, model)
+        predictions = self.make_predictions(data, model)
 
         self.write_predictions(predictions)
 
@@ -73,7 +73,7 @@ class MakePredictionPipeline(object):
 if __name__ == "__main__":
    
     pipeline = MakePredictionPipeline(
-        input_path=r'..\\data\transformed_dataframe.csv',
+        input_path=r'..\\data\test_df_transformed.csv',
         output_path=r'..\\data\predicted_dataframe.csv',
         model_path=r'..\\data\model.pkl')
     pipeline.run()
