@@ -1,3 +1,43 @@
+"""
+utils.py
+
+This script contains various utility functions and a custom transformer for data analysis and preprocessing.
+
+Imports:
+- pandas as pd
+- numpy as np
+- seaborn as sns
+- matplotlib.pyplot as plt
+- scipy.stats as stats
+- train_test_split, GridSearchCV from sklearn.model_selection
+- BaseEstimator, TransformerMixin from sklearn.base
+
+Functions:
+- calculate_outlier_percentage: Calculate the percentage of outliers for each column in a DataFrame.
+- calculate_null_percentage: Calculate the percentage of null values for each column in a DataFrame.
+- outlier_diagnostic_plots: Display diagnostic plots (histogram, QQ plot, box plot) for outlier analysis.
+- feature_target_correlation_df: Calculate feature-target variable correlations in a DataFrame.
+- boxplot: Create a customized box plot for visualization.
+- load_and_split_data: Split data into features and target variables for training and validation sets.
+- train_regressor: Train a regression model using GridSearchCV for hyperparameter tuning.
+- CappingTransformer: A custom transformer for capping numerical data using Interquartile Range (IQR).
+
+Classes:
+- CappingTransformer: A transformer class for capping (winsorizing) numerical data.
+
+Usage:
+- Import this script to access utility functions and the CappingTransformer class for data analysis and preprocessing.
+
+Note:
+- Each function and class includes a docstring describing its purpose, parameters, and usage.
+
+
+DESCRIPCIÓN: utils.py
+AUTOR: Clara Bureu - Maximiliano Medina - Luis Pablo Segovia
+FECHA: 01/12/2023
+"""
+
+# Imports
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -233,3 +273,4 @@ class CappingTransformer(BaseEstimator, TransformerMixin):
             The feature names, which are the same as the input feature names.
         """
         return input_features
+    

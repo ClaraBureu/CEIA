@@ -1,14 +1,32 @@
 """
 train.py
 
-COMPLETAR DOCSTRING
+This script defines a ModelTrainingPipeline class responsible for training regression models
+and serializing the best-performing model for future use.
+
+Imports:
+- os
+- pandas as pd
+- LinearRegression, DecisionTreeRegressor, GradientBoostingRegressor from sklearn
+- mean_squared_error from sklearn.metrics
+- load_and_split_data, train_regressor from utils
+- pickle for serialization
+
+Classes:
+- ModelTrainingPipeline: A class for reading data, training regression models, and serializing the best model.
+
+Usage:
+- Execute this script to read transformed data and train a regression model, saving it as 'model.pkl'.
+- Ensure the transformed data file ('transformed_dataframe.csv') exists in the 'data' directory.
 
 DESCRIPCIÓN: train.py
 AUTOR: Clara Bureu - Maximiliano Medina - Luis Pablo Segovia
-FECHA: 18/11/2023
+FECHA: 01/12/2023
 """
 
 # Imports
+import logging
+import os
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
@@ -17,9 +35,12 @@ from sklearn.metrics import mean_squared_error
 from utils import load_and_split_data
 from utils import train_regressor
 import pickle
-import matplotlib.pyplot as plt
-import seaborn as sns
 
+# Log setting
+logging.basicConfig(level=logging.DEBUG, 
+                    filename='data_logger.log', 
+                    filemode='a', 
+                    format='%(asctime)s:%(levelname)s:%(message)s')
 
 class ModelTrainingPipeline(object):
 
@@ -37,12 +58,35 @@ class ModelTrainingPipeline(object):
         the CSV file.
         """
         pandas_df = pd.read_csv(self.input_path)
+        logging.info('Pandas DataFrame read.')
         return pandas_df
 
     def model_training(self, df: pd.DataFrame):
         """
-        COMPLETAR DOCSTRING
-        
+        Train multiple regression models and select the best one based on RMSE.
+
+        Parameters:
+        -----------
+        df : pandas.DataFrame
+            DataFrame containing the training data.
+
+        Returns:
+        --------
+        object
+            The trained regression model with the best performance.
+
+        Description:
+        ------------
+        This method performs training on various regression models using the provided DataFrame.
+        It evaluates each model's performance based on Root Mean Squared Error (RMSE) on both
+        the training and validation sets and selects the best-performing model.
+
+        The models trained include Linear Regression, Decision Tree Regression, and Gradient
+        Boosting Regression with predefined hyperparameter grids.
+
+        The best-performing model based on the validation set RMSE is stored and finally, retrained
+        on the entire dataset (without validation splitting) for potential future use.
+
         """
         # Load and split the data
         target_variable = 'SalePrice'
@@ -88,29 +132,72 @@ class ModelTrainingPipeline(object):
         best_model.fit(X=X_train_final, y=y_train_final)
         y_train_final_pred = best_model.predict(X=X_train_final)
         
+        logging.info('Best model found.')
         return best_model
 
     def model_dump(self, model_trained) -> None:
         """
-        COMPLETAR DOCSTRING
-        
+        Serialize and save the trained model to a file.
+
+        Parameters:
+        -----------
+        model_trained : object
+            The trained model object to be serialized and saved.
+
+        Returns:
+        --------
+        None
+
+        Description:
+        ------------
+        This method serializes the trained model object using pickle and saves it
+        to a file specified by the 'model_path' attribute within the class instance.
+
+        If successful, the model is saved as a serialized object in the specified file.
+        In case of any error during the serialization process, an exception is caught,
+        and an error message is printed.
+
         """
         try:
             with open(self.model_path, 'wb') as file:
                 pickle.dump(model_trained, file)
+            logging.info('Model.pkl created.')
         except Exception as e:
             print('Error dumping the model: {}'.format(e))
-  
-        return None
+            logging.warning(f'Error dumping the model: {e}')
+            
     
     def run(self):
-    
+        """
+        Execute the complete training and model serialization process.
+
+        Description:
+        ------------
+        This method orchestrates the entire process of:
+        1. Reading data from a source.
+        2. Training a regression model using the read data.
+        3. Serializing and saving the trained model to a file.
+
+        The 'run' method integrates the 'read_data', 'model_training', and 'model_dump'
+        methods to execute the complete training and serialization process.
+
+        """
         df = self.read_data()
         model_trained = self.model_training(df)
         self.model_dump(model_trained)
 
 
 if __name__ == "__main__":
+    # Get the base directory of the current script file
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    
+    # Starting log
+    logging.info('train.py starting.')
 
-    ModelTrainingPipeline(input_path='..\\data\\transformed_dataframe.csv',
-                          model_path='..\\data\\model.pkl').run()
+    # Initialize and execute the ModelTrainingPipeline
+    # Load transformed data from a file and train a model
+    ModelTrainingPipeline(input_path=os.path.join(BASE_DIR,'..', 'data','transformed_dataframe.csv'),
+                          model_path=os.path.join(BASE_DIR,'..', 'data', 'model.pkl')).run()
+    
+    # Log end
+    logging.info('train.py end.')
