@@ -13,11 +13,14 @@ Imports:
 
 Classes:
 - FeatureEngineeringPipeline: A class for data preparation, including methods for reading data,
-  transforming it based on modes, writing transformed data to CSV, and executing the entire pipeline.
+  transforming it based on modes, writing transformed data to CSV, and executing
+  the entire pipeline.
 
 Usage:
-- Execute this script with 'train' or 'test' as the argument to prepare training or test data, respectively.
-- Ensure the necessary input files ('train.csv' for 'train' mode or 'test.csv' for 'test' mode) exist in the 'data' directory.
+- Execute this script with 'train' or 'test' as the argument to prepare training or test data,
+respectively.
+- Ensure the necessary input files ('train.csv' for 'train' mode or 'test.csv' for 'test' mode)
+exist in the 'data' directory.
 
 DESCRIPCIÓN: feature_engineering.py
 AUTOR: Clara Bureu - Maximiliano Medina - Luis Pablo Segovia
@@ -25,25 +28,58 @@ FECHA: 01/12/2023
 """
 
 # Imports
+import argparse
 import logging
 import os
 import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
-from utils import CappingTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
-import argparse
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+from utils import CappingTransformer
+
 
 # Log setting
-logging.basicConfig(level=logging.DEBUG, 
-                    filename='data_logger.log', 
-                    filemode='a', 
+logging.basicConfig(level=logging.DEBUG,
+                    filename='data_logger.log',
+                    filemode='a',
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
+
 class FeatureEngineeringPipeline(object):
+    """
+    A class for data preparation pipeline.
+
+    This class provides methods for reading, transforming, and writing data for machine
+    learning tasks.
+
+    Parameters:
+    -----------
+    input_path : str
+        The path to the input CSV file containing the data.
+    output_path : str
+        The path to the output CSV file where the transformed data will be saved.
+    mode : str
+        The mode of data transformation. Valid values are 'train' and any other value for
+        other transformations.
+
+    Methods:
+    ---------
+    read_data()
+        Reads a CSV file from the path specified in self.input_path and returns a pandas
+        DataFrame.
+
+    data_transformation(df, mode)
+        Perform data transformation on the input DataFrame based on the specified mode.
+
+    write_prepared_data(transformed_dataframe)
+        Write the transformed DataFrame to a CSV file.
+
+    run()
+        Execute the entire data preparation pipeline.
+    """
 
     def __init__(self, input_path, output_path, mode):
         self.mode = mode
@@ -72,7 +108,8 @@ class FeatureEngineeringPipeline(object):
         df : pandas.DataFrame
             Input DataFrame containing the data for transformation.
         mode : str
-            The mode of transformation. Should be either 'train' or another value for other transformations.
+            The mode of transformation. Should be either 'train' or another value for
+            other transformations.
 
         Returns:
         --------
@@ -109,7 +146,8 @@ class FeatureEngineeringPipeline(object):
 
         """
         # Split the data frame
-        train_df, test_df = train_test_split(df, test_size=0.20, random_state=17)
+        train_df, test_df = train_test_split(
+            df, test_size=0.20, random_state=17)
         test_df.to_csv('./data/test.csv', sep=',', index=False)
         logging.info("Test DataFrame created after split.")
 
@@ -119,7 +157,7 @@ class FeatureEngineeringPipeline(object):
                             'YearBuilt', 'Fireplaces', 'MasVnrArea', 'LotArea',
                             'SalePrice']
         categorical_features = ['ExterQual', 'CentralAir']
-        metadata_features  = ['Id'] # noqa E221
+        metadata_features = ['Id']  # noqa E221
 
         # Final features
         final_features = numeric_features + categorical_features + metadata_features   # noqa E501
@@ -131,27 +169,33 @@ class FeatureEngineeringPipeline(object):
         # Removing na
         data_cleaned.dropna(inplace=True)
         data_cleaned_test.dropna(inplace=True)
-           
-        # Combine all the preprocessing steps into a single pipeline for numeric features    # noqa E501
+
+        # Combine all the preprocessing steps into a single pipeline for
+        # numeric features
         numeric_pipeline = Pipeline([
-            ('imputer', SimpleImputer(strategy='mean')),  # Step 1: Impute missing values   # noqa E501
+            # Step 1: Impute missing values
+            ('imputer', SimpleImputer(strategy='mean')),
             ('scaler', StandardScaler()),  # Step 2: Scale the data
-            ('capper', CappingTransformer(threshold=1.5))  # Step 3: Apply the CappingTransformer   # noqa E501
+            # Step 3: Apply the CappingTransformer
+            ('capper', CappingTransformer(threshold=1.5))
         ])
 
         # Categorical pipeline
         categorical_pipeline = Pipeline([
-            ('imputer', SimpleImputer(strategy='most_frequent')),  # Step 1: Impute missing values   # noqa E501
-            ('onehot', OneHotEncoder())  # Step 2: One-hot encode categorical features   # noqa E501
+            # Step 1: Impute missing values
+            ('imputer', SimpleImputer(strategy='most_frequent')),
+            # Step 2: One-hot encode categorical features
+            ('onehot', OneHotEncoder())
         ])
 
-        # Create a ColumnTransformer to apply the numeric_pipeline to numeric features and the categorical_pipeline to categorical features   # noqa E501
+        # Create a ColumnTransformer to apply the numeric_pipeline to numeric features and the
+        # categorical_pipeline to categorical features   # noqa E501
         feature_transformer = ColumnTransformer(
             transformers=[
                 ('numeric', numeric_pipeline, numeric_features),
                 ('categoric', categorical_pipeline, categorical_features)
             ],
-            remainder='passthrough'  # Pass through features not specified in transformers   # noqa E501
+            remainder='passthrough'  # Pass through features not specified in transformers
         )
 
         # Combine all the steps into a single pipeline
@@ -162,19 +206,35 @@ class FeatureEngineeringPipeline(object):
         # Flag the mode
         if mode == 'train':
             full_pipeline.fit(X=data_cleaned[final_features])
-            final_data = full_pipeline.transform(X=data_cleaned[final_features])
-            final_data_df = pd.DataFrame(final_data, columns=full_pipeline.get_feature_names_out())   # noqa E501
+            final_data = full_pipeline.transform(
+                X=data_cleaned[final_features])
+            final_data_df = pd.DataFrame(final_data,
+                                         columns=full_pipeline.get_feature_names_out())
             df_transformed = final_data_df.rename(
-                columns=lambda x: x.replace('numeric__', '').replace('categoric__', '').replace('remainder__', ''))  # noqa E501
+                columns=lambda x: x.replace(
+                    'numeric__',
+                    '') .replace(
+                    'categoric__',
+                    '') .replace(
+                    'remainder__',
+                    ''))
             logging.info("Train transformation pipeline complete.")
         else:
             full_pipeline.fit(X=data_cleaned[final_features])
-            final_data = full_pipeline.transform(X=data_cleaned_test[final_features])
-            final_data_df = pd.DataFrame(final_data, columns=full_pipeline.get_feature_names_out())   # noqa E501
+            final_data = full_pipeline.transform(
+                X=data_cleaned_test[final_features])
+            final_data_df = pd.DataFrame(final_data,
+                                         columns=full_pipeline.get_feature_names_out())
             df_transformed = final_data_df.rename(
-                columns=lambda x: x.replace('numeric__', '').replace('categoric__', '').replace('remainder__', ''))  # noqa E501
+                columns=lambda x: x.replace(
+                    'numeric__',
+                    '') .replace(
+                    'categoric__',
+                    '') .replace(
+                    'remainder__',
+                    ''))
             logging.info("Test transformation complete.")
-        
+
         return df_transformed
 
     def write_prepared_data(self, transformed_dataframe):
@@ -208,13 +268,14 @@ class FeatureEngineeringPipeline(object):
         2. Performing data transformation on the read data based on a specified mode.
         3. Writing the transformed data to a CSV file at the specified output path.
 
-        The 'run' method integrates the 'read_data', 'data_transformation', and 'write_prepared_data'
-        methods to facilitate a complete data preparation process.
+        The 'run' method integrates the 'read_data', 'data_transformation', and
+        'write_prepared_data' methods to facilitate a complete data preparation process.
 
         """
         df = self.read_data()
         df_transformed = self.data_transformation(df, mode)
         self.write_prepared_data(df_transformed)
+
 
 if __name__ == "__main__":
     # Parse command-line arguments
@@ -224,10 +285,10 @@ if __name__ == "__main__":
 
     # Retrieve the specified mode from command-line arguments
     mode = args.mode
-    
+
     # Set the base directory to the parent directory of the current file
     BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-    
+
     # Start Log
     logging.info('feature_engineering.py starting.')
 
@@ -242,7 +303,10 @@ if __name__ == "__main__":
         OUT_PATH = os.path.join(BASE_DIR, 'data', 'test_df_transformed.csv')
 
     # Initialize and execute the Feature Engineering Pipeline based on the mode
-    FeatureEngineeringPipeline(input_path=IN_PATH, output_path=OUT_PATH, mode=mode).run()
+    FeatureEngineeringPipeline(
+        input_path=IN_PATH,
+        output_path=OUT_PATH,
+        mode=mode).run()
 
     # End Log
     logging.info('feature_engineering.py end.')

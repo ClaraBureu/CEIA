@@ -13,10 +13,12 @@ Imports:
 - pickle for serialization
 
 Classes:
-- ModelTrainingPipeline: A class for reading data, training regression models, and serializing the best model.
+- ModelTrainingPipeline: A class for reading data, training regression models, 
+and serializing the best model.
 
 Usage:
-- Execute this script to read transformed data and train a regression model, saving it as 'model.pkl'.
+- Execute this script to read transformed data and train a regression model, 
+saving it as 'model.pkl'.
 - Ensure the transformed data file ('transformed_dataframe.csv') exists in the 'data' directory.
 
 DESCRIPCIÓN: train.py
@@ -27,22 +29,50 @@ FECHA: 01/12/2023
 # Imports
 import logging
 import os
+import pickle
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
+from sklearn.tree import DecisionTreeRegressor
 from utils import load_and_split_data
 from utils import train_regressor
-import pickle
 
 # Log setting
-logging.basicConfig(level=logging.DEBUG, 
-                    filename='data_logger.log', 
-                    filemode='a', 
+logging.basicConfig(level=logging.DEBUG,
+                    filename='data_logger.log',
+                    filemode='a',
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
+
 class ModelTrainingPipeline(object):
+    """
+    A class for model training and serialization.
+
+    This class provides methods for training and saving machine learning models.
+
+    Parameters:
+    -----------
+    input_path : str
+        The path to the input CSV file containing the training data.
+    model_path : str
+        The path to the output file where the trained model will be saved.
+
+    Methods:
+    ---------
+    read_data()
+        Reads a CSV file from the path specified in self.input_path and
+        returns a pandas DataFrame.
+
+    model_training(df)
+        Train multiple regression models and select the best one based on RMSE.
+
+    model_dump(model_trained)
+        Serialize and save the trained model to a file.
+
+    run()
+        Execute the complete data preparation pipeline.
+    """
 
     def __init__(self, input_path, model_path):
         self.input_path = input_path
@@ -91,8 +121,7 @@ class ModelTrainingPipeline(object):
         # Load and split the data
         target_variable = 'SalePrice'
 
-        X_train, X_val, y_train, y_val = load_and_split_data(
-            df, target_variable)
+        X_train, X_val, y_train, y_val = load_and_split_data(df, target_variable)
 
         # Define hyperparameter grids for each model
         model_params = {
@@ -115,7 +144,8 @@ class ModelTrainingPipeline(object):
 
             # Calculate RMSE for the training set
             y_train_pred = best_model.predict(X_train)
-            rmse_train = mean_squared_error(y_train, y_train_pred, squared=False)
+            rmse_train = mean_squared_error(
+                y_train, y_train_pred, squared=False)
 
             # Calculate RMSE for the validation set
             y_val_pred = best_model.predict(X_val)
@@ -124,14 +154,14 @@ class ModelTrainingPipeline(object):
             # Store the best model and RMSE scores in the dictionary
             best_models[model.__class__.__name__] = (
                 best_model, y_val_pred, rmse_val, y_train_pred, rmse_train)
-        
+
         X_train_final = df.drop(columns=target_variable)
         y_train_final = df[target_variable]
-        
+
         best_model = best_models["GradientBoostingRegressor"][0]
         best_model.fit(X=X_train_final, y=y_train_final)
-        y_train_final_pred = best_model.predict(X=X_train_final)
-        
+        best_model.predict(X=X_train_final)
+
         logging.info('Best model found.')
         return best_model
 
@@ -163,10 +193,9 @@ class ModelTrainingPipeline(object):
                 pickle.dump(model_trained, file)
             logging.info('Model.pkl created.')
         except Exception as e:
-            print('Error dumping the model: {}'.format(e))
-            logging.warning(f'Error dumping the model: {e}')
-            
-    
+            print(f'Error dumping the model: {e}')
+            logging.info(f'Error dumping the model: {e}')
+
     def run(self):
         """
         Execute the complete training and model serialization process.
@@ -190,14 +219,23 @@ class ModelTrainingPipeline(object):
 if __name__ == "__main__":
     # Get the base directory of the current script file
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Starting log
     logging.info('train.py starting.')
 
     # Initialize and execute the ModelTrainingPipeline
     # Load transformed data from a file and train a model
-    ModelTrainingPipeline(input_path=os.path.join(BASE_DIR,'..', 'data','transformed_dataframe.csv'),
-                          model_path=os.path.join(BASE_DIR,'..', 'data', 'model.pkl')).run()
-    
+    ModelTrainingPipeline(
+        input_path=os.path.join(
+            BASE_DIR,
+            '..',
+            'data',
+            'transformed_dataframe.csv'),
+        model_path=os.path.join(
+            BASE_DIR,
+            '..',
+            'data',
+            'model.pkl')).run()
+
     # Log end
     logging.info('train.py end.')

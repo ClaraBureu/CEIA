@@ -5,7 +5,8 @@ This script executes feature engineering and prediction modules using subprocess
 
 Usage:
     - Ensure Python is installed and accessible in the environment.
-    - Make sure the necessary modules 'feature_engineering.py' and 'predict.py' exist in the 'src' directory.
+    - Make sure the necessary modules 'feature_engineering.py' and 'predict.py' 
+    exist in the 'src' directory.
 
 Example:
     - To run feature engineering on 'test' data and then perform prediction:

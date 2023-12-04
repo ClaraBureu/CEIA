@@ -16,7 +16,8 @@ Classes:
 
 Usage:
 - Execute this script to make predictions using a pre-trained model on specified input data.
-- Ensure the necessary input files ('test_df_transformed.csv' and 'model.pkl') exist in the 'data' directory.
+- Ensure the necessary input files ('test_df_transformed.csv' and 'model.pkl') exist 
+in the 'data' directory.
 
 DESCRIPCIÓN: predict.py
 AUTOR: Clara Bureu - Maximiliano Medina - Luis Pablo Segovia
@@ -31,13 +32,48 @@ import pandas as pd
 from pandas import DataFrame
 
 # Log setting
-logging.basicConfig(level=logging.DEBUG, 
-                    filename='data_logger.log', 
-                    filemode='a', 
+logging.basicConfig(level=logging.DEBUG,
+                    filename='data_logger.log',
+                    filemode='a',
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
+
 class MakePredictionPipeline(object):
-   
+    """
+    A class for making predictions using a trained model.
+
+    This class provides methods for loading data, loading a trained model,
+    making predictions, and writing predictions to a CSV file.
+
+    Parameters:
+    -----------
+    input_path : str
+        The path to the input CSV file containing the data for prediction.
+    output_path : str
+        The path to the output CSV file where the predictions will be saved.
+    model_path : str, optional
+        The path to the trained model file. If None, the model is loaded from 
+        the class attribute 'self.model'.
+
+    Methods:
+    ---------
+    load_data()
+        Reads a CSV file from the path specified in self.input_path and
+        returns a pandas DataFrame.
+
+    load_model()
+        Load the inference model from the specified path.
+
+    make_predictions(data, model=None)
+        Generate predictions using the loaded model.
+
+    write_predictions(predicted_dataframe)
+        Write the predicted results to a CSV file.
+
+    run()
+        Execute the complete prediction pipeline.
+    """
+
     def __init__(self, input_path, output_path, model_path: str = None):
         self.input_path = input_path
         self.output_path = output_path
@@ -81,7 +117,7 @@ class MakePredictionPipeline(object):
         with open(self.model_path, 'rb') as file:
             self.model = pkl.load(file)
         logging.info('Model loaded.')
-        
+
     def make_predictions(self, data, model=None):
         """
         Generate predictions using the loaded model.
@@ -181,10 +217,10 @@ if __name__ == "__main__":
 
     # Initialize the prediction pipeline with input, output, and model paths
     pipeline = MakePredictionPipeline(
-        input_path=os.path.join(BASE_DIR,'..','data','test_df_transformed.csv'), 
-        output_path=os.path.join(BASE_DIR,'..','data','predicted_dataframe.csv'),
-        model_path=os.path.join(BASE_DIR,'..','data','model.pkl'))
-    
+        input_path=os.path.join(BASE_DIR, '..', 'data', 'test_df_transformed.csv'),
+        output_path=os.path.join(BASE_DIR, '..', 'data', 'predicted_dataframe.csv'),
+        model_path=os.path.join(BASE_DIR, '..', 'data', 'model.pkl'))
+
     # Execute the prediction pipeline
     pipeline.run()
 
