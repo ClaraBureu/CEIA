@@ -144,13 +144,7 @@ class FeatureEngineeringPipeline(object):
         'numeric__', 'categoric__', and 'remainder__' prefixes are removed from the
         transformed column names for better readability.
 
-        """
-        # Split the data frame
-        train_df, test_df = train_test_split(
-            df, test_size=0.20, random_state=17)
-        test_df.to_csv('./data/test.csv', sep=',', index=False)
-        logging.info("Test DataFrame created after split.")
-
+       """
         # Choosing the features to use
         numeric_features = ['OverallQual', 'GrLivArea', 'GarageCars',
                             'TotalBsmtSF', 'FullBath', 'YearRemodAdd',
@@ -163,12 +157,10 @@ class FeatureEngineeringPipeline(object):
         final_features = numeric_features + categorical_features + metadata_features   # noqa E501
 
         # Removing columns
-        data_cleaned = train_df[final_features]
-        data_cleaned_test = test_df[final_features]
+        data_cleaned = df[final_features]
 
         # Removing na
         data_cleaned.dropna(inplace=True)
-        data_cleaned_test.dropna(inplace=True)
 
         # Combine all the preprocessing steps into a single pipeline for
         # numeric features
@@ -222,7 +214,7 @@ class FeatureEngineeringPipeline(object):
         else:
             full_pipeline.fit(X=data_cleaned[final_features])
             final_data = full_pipeline.transform(
-                X=data_cleaned_test[final_features])
+                X=data_cleaned[final_features])
             final_data_df = pd.DataFrame(final_data,
                                          columns=full_pipeline.get_feature_names_out())
             df_transformed = final_data_df.rename(
@@ -295,11 +287,11 @@ if __name__ == "__main__":
     # Define input and output paths based on the specified mode
     if mode == 'train':
         # Define paths for training mode
-        IN_PATH = os.path.join(BASE_DIR, 'data', 'train.csv')
+        IN_PATH = os.path.join(BASE_DIR, 'data', 'train_pipeline.csv')
         OUT_PATH = os.path.join(BASE_DIR, 'data', 'transformed_dataframe.csv')
     else:
         # Define paths for test mode
-        IN_PATH = os.path.join(BASE_DIR, 'data', 'test.csv')
+        IN_PATH = os.path.join(BASE_DIR, 'data', 'test_pipeline.csv')
         OUT_PATH = os.path.join(BASE_DIR, 'data', 'test_df_transformed.csv')
 
     # Initialize and execute the Feature Engineering Pipeline based on the mode
