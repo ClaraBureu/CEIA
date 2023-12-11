@@ -8,7 +8,6 @@ Imports:
 - pandas as pd
 - Pipeline, SimpleImputer, StandardScaler, ColumnTransformer, OneHotEncoder from sklearn
 - CappingTransformer from utils
-- train_test_split from sklearn.model_selection
 - argparse for command-line arguments
 
 Classes:
@@ -39,6 +38,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from utils import CappingTransformer
+import pickle
 
 
 # Log setting
@@ -211,12 +211,19 @@ class FeatureEngineeringPipeline(object):
                     'remainder__',
                     ''))
             logging.info("Train transformation pipeline complete.")
+            
+            with open('data/trained_pipeline.pkl', 'wb') as file:
+                pickle.dump(full_pipeline, file)
+
         else:
-            full_pipeline.fit(X=data_cleaned[final_features])
-            final_data = full_pipeline.transform(
-                X=data_cleaned[final_features])
+            # Load the trained pipeline using pickle.load
+            with open('data/trained_pipeline.pkl', 'rb') as file:
+                pipeline = pickle.load(file)
+
+            # Apply the loaded pipeline to the test data
+            final_data = pipeline.transform(X=data_cleaned[final_features])
             final_data_df = pd.DataFrame(final_data,
-                                         columns=full_pipeline.get_feature_names_out())
+                            columns=pipeline.get_feature_names_out())
             df_transformed = final_data_df.rename(
                 columns=lambda x: x.replace(
                     'numeric__',
