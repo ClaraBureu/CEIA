@@ -11,5 +11,7 @@ seaborn = "*"
 scikit-learn = "*"
 numpy = "*"
 tensorflow = "*"
+keras = "*"
+pydot = "==1.4.2"
 
 [dev-packages]

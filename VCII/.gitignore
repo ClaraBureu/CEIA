@@ -1,2 +1,9 @@
 .venv
 animales
+data_aug
+raw-img
+test_dataset
+train_dataset
+__pycache__
+output
+transfer_learning
