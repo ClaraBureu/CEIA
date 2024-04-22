@@ -13,6 +13,7 @@ pywin32 = "*"
 pandasgui = "*"
 seaborn = "*"
 streamlit = "*"
+graphviz = "*"
 
 [dev-packages]
 
