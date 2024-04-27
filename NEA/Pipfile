@@ -14,6 +14,7 @@ pandasgui = "*"
 seaborn = "*"
 streamlit = "*"
 graphviz = "*"
+tensorflow = "*"
 
 [dev-packages]
 
