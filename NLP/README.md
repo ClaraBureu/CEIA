@@ -18,5 +18,5 @@ En este desafío, se construye un modelo de predicción de texto utilizando mode
 ## [Desafío 4: Q&A Chatbot (Embeddings + LSTM)](Desafío4/6-bot_qa.ipynb)
 En este desafío, se desarrolla un chatbot de preguntas y respuestas utilizando embeddings de palabras y redes neuronales recurrentes (LSTM). El chatbot es capaz de entender preguntas en lenguaje natural y generar respuestas relevantes basadas en el contexto y el conocimiento almacenado.
 
-## [Desafío 5: Bert Sentiment Analysis](Desafío5/7d - bert sentiment analysis multicategorial.ipynb)
+## [Desafío 5: Bert Sentiment Analysis](Desafío5/7d-bertsentimentanalysismulticategorial.ipynb)
 En este desafío, se entrena un modelo de BERT para realizar análisis de sentimientos. BERT (Bidirectional Encoder Representations from Transformers) es un modelo de lenguaje preentrenado desarrollado por Google que ha demostrado un rendimiento sobresaliente en una variedad de tareas de procesamiento del lenguaje natural (NLP).
